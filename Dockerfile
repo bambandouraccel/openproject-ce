@@ -14,11 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer Bundler 2.4.x
+# Installer Bundler 2.4
 RUN gem install bundler -v "~> 2.4" --no-document
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
-# Copier Gemfile et Gemfile.lock (OpenShift a déjà cloné le repo)
+# Copier Gemfile et Gemfile.lock (OpenShift clone déjà le repo)
 COPY Gemfile Gemfile.lock ./
 
 # Installer les gems (sans test/development/mysql2)
