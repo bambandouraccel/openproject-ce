@@ -15,23 +15,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer Bundler à jour
+# Supprimer toutes les versions de bundler existantes et installer la bonne
 RUN gem uninstall bundler -a -x || true && \
     gem install bundler -v "~> 2.3" --no-document
 
 # Ajouter Bundler au PATH
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
-# Copier Gemfile et Gemfile.lock
+# Copier Gemfile et Gemfile.lock (pour cache)
 COPY Gemfile Gemfile.lock ./
 
-# Installer gems (sans test/development/mysql2)
+# Installer les gems
 RUN bundle install --deployment --with="docker opf_plugins" --without="test development mysql2"
 
 # Copier le code source
 COPY . $APP_PATH
 
-# Compiler assets (JS/CSS)
+# Compiler assets JS/CSS
 RUN npm install && bash docker/precompile-assets.sh
 
 # -------------------------
@@ -48,13 +48,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 imagemagick poppler-utils tesseract-ocr unrtf catdoc nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Préparer le dossier pour UID aléatoire OpenShift
+# Préparer dossier pour UID random OpenShift
 RUN mkdir -p $APP_PATH && chgrp -R 0 $APP_PATH && chmod -R g+rwX $APP_PATH
 
-# Copier application depuis le builder
+# Copier l’application depuis le builder
 COPY --from=builder /app/openproject $APP_PATH
 
-# Exposer le port OpenShift
+# Exposer port OpenShift
 EXPOSE 8080
 
 # Entrypoint et CMD
