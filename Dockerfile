@@ -1,7 +1,8 @@
 # -------------------------
 # Stage 1 : Builder
 # -------------------------
-FROM ruby:3.2-slim AS builder
+#FROM ruby:3.2-slim AS builder
+FROM ruby:2.6-stretch AS builder
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
@@ -36,7 +37,7 @@ RUN npm install && bash docker/precompile-assets.sh
 # -------------------------
 # Stage 2 : Runtime
 # -------------------------
-FROM ruby:3.2-slim
+FROM ruby:2.6-stretch
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
