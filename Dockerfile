@@ -6,7 +6,7 @@ FROM ruby:3.2-slim AS builder
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
 
-# Installer dépendances build
+# Installer toutes les dépendances nécessaires pour compiler les gems et assets
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential git curl gnupg \
     libpq-dev libmagickwand-dev libxml2-dev libxslt1-dev \
@@ -18,13 +18,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN gem install bundler -v "~> 2.4" --no-document
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
+# Préparer les permissions pour l’UID OpenShift
+RUN mkdir -p $APP_PATH && chgrp -R 0 $APP_PATH && chmod -R g+rwX $APP_PATH
+
 # Copier Gemfile et Gemfile.lock (OpenShift clone déjà le repo)
 COPY Gemfile Gemfile.lock ./
 
 # Installer les gems (sans test/development/mysql2)
 RUN bundle install --deployment --with="docker opf_plugins" --without="test development mysql2"
 
-# Copier tout le code source cloné par OpenShift
+# Copier tout le code source
 COPY . $APP_PATH
 
 # Compiler les assets JS/CSS
