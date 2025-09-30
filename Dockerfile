@@ -1,7 +1,7 @@
 # -------------------------
 # Stage 1 : Builder
 # -------------------------
-FROM ruby:2.6-slim AS builder
+FROM ruby:3.2-slim AS builder
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
@@ -14,9 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Supprimer anciennes versions de Bundler et installer 2.2.x compatible Ruby 2.6
-RUN gem uninstall bundler -a -x || true && \
-    gem install bundler -v "~> 2.2" --no-document
+# Installer Bundler 2.4.x
+RUN gem install bundler -v "~> 2.4" --no-document
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
 # Copier Gemfile et Gemfile.lock (OpenShift a déjà cloné le repo)
@@ -34,7 +33,7 @@ RUN npm install && bash docker/precompile-assets.sh
 # -------------------------
 # Stage 2 : Runtime
 # -------------------------
-FROM ruby:2.6-slim
+FROM ruby:3.2-slim
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
