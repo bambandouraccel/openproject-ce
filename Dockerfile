@@ -14,9 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Supprimer anciennes versions de Bundler et installer 2.3.x
+# Supprimer anciennes versions de Bundler et installer 2.2.x compatible Ruby 2.6
 RUN gem uninstall bundler -a -x || true && \
-    gem install bundler -v "~> 2.3" --no-document
+    gem install bundler -v "~> 2.2" --no-document
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
 # Copier Gemfile et Gemfile.lock (OpenShift a déjà cloné le repo)
@@ -25,7 +25,7 @@ COPY Gemfile Gemfile.lock ./
 # Installer les gems (sans test/development/mysql2)
 RUN bundle install --deployment --with="docker opf_plugins" --without="test development mysql2"
 
-# Copier le reste du code source cloné par OpenShift
+# Copier tout le code source cloné par OpenShift
 COPY . $APP_PATH
 
 # Compiler les assets JS/CSS
