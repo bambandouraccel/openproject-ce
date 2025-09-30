@@ -1,7 +1,7 @@
 # -------------------------
 # Stage 1 : Builder
 # -------------------------
-FROM ruby:3-slim-trixie AS builder
+FROM ruby:2.6-slim AS builder
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
@@ -14,16 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Supprimer anciennes versions de Bundler et installer la bonne
+# Supprimer anciennes versions de Bundler et installer 2.3.x
 RUN gem uninstall bundler -a -x || true && \
     gem install bundler -v "~> 2.3" --no-document
 ENV PATH="/usr/local/bundle/bin:$PATH"
 
 # Copier Gemfile et Gemfile.lock (OpenShift a déjà cloné le repo)
 COPY Gemfile Gemfile.lock ./
-
-# Mettre à jour Bundler si nécessaire
-RUN bundle update --bundler
 
 # Installer les gems (sans test/development/mysql2)
 RUN bundle install --deployment --with="docker opf_plugins" --without="test development mysql2"
@@ -37,7 +34,7 @@ RUN npm install && bash docker/precompile-assets.sh
 # -------------------------
 # Stage 2 : Runtime
 # -------------------------
-FROM ruby:3-slim-trixie
+FROM ruby:2.6-slim
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
