@@ -39,7 +39,7 @@ RUN npm install && \
     bash docker/precompile-assets.sh
 
 # ---------- Stage 2: Runtime ----------
-FROM ruby:3.1-slim
+FROM registry.access.redhat.com/ubi9/ruby-31:1-47
 
 ENV APP_USER=openproject \
     APP_PATH=/app/openproject
