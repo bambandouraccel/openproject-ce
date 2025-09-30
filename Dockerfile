@@ -1,5 +1,6 @@
 # ---------- Stage 1: Builder ----------
-FROM ruby:3.1-slim AS builder
+FROM registry.access.redhat.com/ubi9/ruby-31:1-47 AS builder
+
 
 # Variables d'environnement
 ENV APP_USER=openproject \
