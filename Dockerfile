@@ -1,5 +1,5 @@
 # -------------------------
-# Build stage
+# Stage 1 : Builder
 # -------------------------
 FROM ruby:3-slim-trixie AS builder
 
@@ -15,29 +15,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     imagemagick poppler-utils tesseract-ocr unrtf catdoc \
     && rm -rf /var/lib/apt/lists/*
 
-# Supprimer les anciennes versions de bundler et installer la bonne
+# Installer Bundler à jour
 RUN gem uninstall bundler -a -x || true && \
     gem install bundler -v "~> 2.3" --no-document
 
-ENV BUNDLER_VERSION="~>2.3"
+# Ajouter Bundler au PATH
+ENV PATH="/usr/local/bundle/bin:$PATH"
 
-# Copier Gemfile et Gemfile.lock avant tout (meilleur cache)
+# Copier Gemfile et Gemfile.lock
 COPY Gemfile Gemfile.lock ./
 
-# Utiliser bundler forcé à la bonne version
-RUN bundle _2.3.26_ install \
-    --deployment \
-    --with="docker opf_plugins" \
-    --without="test development mysql2"
+# Installer gems (sans test/development/mysql2)
+RUN bundle install --deployment --with="docker opf_plugins" --without="test development mysql2"
 
-# Copier tout le code source
+# Copier le code source
 COPY . $APP_PATH
 
-# Compiler assets
+# Compiler assets (JS/CSS)
 RUN npm install && bash docker/precompile-assets.sh
 
 # -------------------------
-# Runtime stage
+# Stage 2 : Runtime
 # -------------------------
 FROM ruby:3-slim-trixie
 
@@ -50,14 +48,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 imagemagick poppler-utils tesseract-ocr unrtf catdoc nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix permissions pour OpenShift (UID random)
+# Préparer le dossier pour UID aléatoire OpenShift
 RUN mkdir -p $APP_PATH && chgrp -R 0 $APP_PATH && chmod -R g+rwX $APP_PATH
 
-# Copier depuis le builder
+# Copier application depuis le builder
 COPY --from=builder /app/openproject $APP_PATH
 
-# OpenShift recommande d'exposer 8080
+# Exposer le port OpenShift
 EXPOSE 8080
 
+# Entrypoint et CMD
 ENTRYPOINT ["./docker/entrypoint.sh"]
 CMD ["bash", "-c", "bundle exec rails server -b 0.0.0.0 -p 8080"]
