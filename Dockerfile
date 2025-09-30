@@ -1,5 +1,5 @@
 # ---------- Stage 1: Builder ----------
-FROM registry.access.redhat.com/ubi9/ruby-31:1-47 AS builder
+FROM ruby:3-slim-trixie AS builder
 
 
 # Variables d'environnement
@@ -39,7 +39,7 @@ RUN npm install && \
     bash docker/precompile-assets.sh
 
 # ---------- Stage 2: Runtime ----------
-FROM registry.access.redhat.com/ubi9/ruby-31:1-47
+FROM ruby:3-slim-trixie
 
 ENV APP_USER=openproject \
     APP_PATH=/app/openproject
