@@ -1,7 +1,7 @@
 # -------------------------
 # Stage 1 : Builder
 # -------------------------
-FROM ruby:latest AS builder
+FROM ruby:3.5.0-preview1-slim-trixie AS builder
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
@@ -37,7 +37,7 @@ RUN npm install && bash docker/precompile-assets.sh
 # Stage 2 : Runtime
 # -------------------------
 #FROM ruby:3.2-slim
-FROM ruby:latest
+FROM ruby:3.5.0-preview1-slim-trixie
 
 ENV APP_PATH=/app/openproject
 WORKDIR $APP_PATH
